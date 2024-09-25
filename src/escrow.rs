@@ -283,7 +283,7 @@ mod escrow {
         /// particular power over it or its users.
         pub fn instantiate_escrow() -> Global<Escrow>
         {
-            let resource = ResourceBuilder::new_integer_non_fungible::<OwnerReceipt>(OwnerRole::None).create_with_no_initial_supply();
+            let resource = ResourceBuilder::new_ruid_non_fungible::<OwnerReceipt>(OwnerRole::None).create_with_no_initial_supply();
             Self {
                 vaults: KeyValueStore::new(),
                 receipt_generator : resource,
@@ -302,21 +302,17 @@ mod escrow {
         /// deposited in this call.
         pub fn deposit_nft(&mut self,
                              owner: NonFungibleGlobalId,
-                             nft: Bucket,
-                             price : u128,
+                             nft: NonFungibleBucket,
+                             price : Decimal,
                              coin : ResourceAddress)
                              -> Bucket
         {
-
-            let nft_receipt : Bucket = self.receipt_generator.mint_non_fungible()
-            .metadata(metadata!(
-                init {
-                    "name" => "NFT RECEIPT", locked;
-                    "NFT" => nft.content
-                }
-            ))
-            .divisibility(DIVISIBILITY_NONE)
-            .mint_initial_supply(1);
+            let resource_address = nft.resource_address();
+            let global_id = NonFungibleGlobalId::new(resource_address, nft.non_fungible_local_id());
+            let nft_data : OwnerReceipt = OwnerReceipt {
+                deposited_nft: global_id
+            };
+            let nft_receipt : Bucket = self.receipt_generator.mint_ruid_non_fungible(nft_data);
 
             {
                 let pool = self.get_or_add_pool(&owner_nfgid);
