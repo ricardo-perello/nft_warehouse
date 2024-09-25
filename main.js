@@ -20,12 +20,6 @@ document.querySelector("#navbar-container").innerHTML = `
       <radix-connect-button />
     </div>
 `;
-document.querySelector(
-  "#dev-mode-gif"
-).innerHTML = `<img src="${devModeGif}" alt="dev mode setup" />`;
-document.querySelector(
-  "#hello-tokens"
-).innerHTML = `<img src="${helloTokens}" alt="hello tokens" />`;
 
 // You can create a dApp definition in the dev console at https://stokenet-console.radixdlt.com/dapp-metadata
 // then use that account for your dAppDefinitionAddress
@@ -120,36 +114,12 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
 });
 
 // Send a transaction to the wallet when user clicks on the claim token button Id=get-hello-token
-document.getElementById("get-hello-token").onclick = async function () {
-  let manifest = `
-  CALL_METHOD
-    Address("${componentAddress}")
-    "free_token"
-    ;
-  CALL_METHOD
-    Address("${accountAddress}")
-    "deposit_batch"
-    Expression("ENTIRE_WORKTOP")
-    ;
-  `;
-  console.log("manifest: ", manifest);
 
-  this.classList.add("loading");
-  // Send manifest to extension for signing
-  const result = await rdt.walletApi.sendTransaction({
-    transactionManifest: manifest,
-    version: 1,
-  });
-  this.classList.remove("loading");
-  if (result.isErr()) throw result.error;
-  console.log("free token result:", result.value);
 
+  
   // Get the details of the transaction committed to the ledger
-  let getCommitReceipt = await gatewayApi.transaction.getCommittedDetails(
-    result.value.transactionIntentHash
-  );
-  console.log("transaction receipt:", getCommitReceipt);
-};
+ 
+
 
 function checkIfClaimShouldBeEnabled() {
   const getHelloTokenBtn = document.querySelector("#get-hello-token");
