@@ -6,11 +6,11 @@
 //! Escrow as a central place to hold funds that go into a variety of
 //! services.
 //!
-//! You can issue Allowance NFTs towards your Escrow and give those
-//! Allowances to others. Each Allowance NFT acts a bit like an IOU
-//! that the holder can use to extract funds from your Escrow, for as
-//! long as funds last.
-//!
+// ! You can issue Allowance NFTs towards your Escrow and give those
+// ! Allowances to others. Each Allowance NFT acts a bit like an IOU
+// ! that the holder can use to extract funds from your Escrow, for as
+// ! long as funds last.
+// !
 //! You could for example put 10k XRD into an Escrow, issue an
 //! Allowance for 10k XRD and give to your son, and another Allowance
 //! also for 10k XRD and give to your daughter. You explain to them
