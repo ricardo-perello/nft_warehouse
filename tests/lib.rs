@@ -1,6 +1,6 @@
 use scrypto_test::prelude::*;
 
-use nft_warehouse::hello_test::*;
+use hello::hello_test::*;
 
 #[test]
 fn test_hello() {
