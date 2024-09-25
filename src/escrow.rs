@@ -262,9 +262,6 @@ use scrypto::prelude::*;
 pub struct OwnerReceipt {
     deposited_nft: NonFungibleGlobalId,
 }
-
-pub struct MarketBadge {
-}
 #[derive(ScryptoSbor)]
 pub struct SaleConditions{
     price : Decimal,
@@ -290,7 +287,12 @@ mod escrow {
         pub fn instantiate_escrow() -> Global<Escrow>
         {
             let resource = ResourceBuilder::new_ruid_non_fungible::<OwnerReceipt>(OwnerRole::None).create_with_no_initial_supply();
-            let seller_badges_rm = ResourceBuilder::new_fungible(OwnerRole::None).create_with_no_initial_supply();
+            let seller_badges_rm = ResourceBuilder::new_fungible(OwnerRole::None)
+            .withdraw_roles(withdraw_roles!{
+                withdrawer => rule!(deny_all);
+                withdrawer_updater => rule!(deny_all);
+            })
+            .create_with_no_initial_supply();
             Self {
                 vaults: KeyValueStore::new(),
                 sale_condition : KeyValueStore::new(),
@@ -324,6 +326,18 @@ mod escrow {
         pub fn issue_seller_badge(&mut self) -> Bucket {
             self.seller_badge_generator.mint(1)
         }
+
+        pub fn exchange(&mut self, seller_proof : Proof, requested_resource : Bucket, nft_global_id : NonFungibleGlobalId) -> NonFungibleBucket{
+            seller_proof.check(self.seller_badge_generator.address());
+            if self.sale_condition.get(&nft_global_id).unwrap().price == requested_resource.amount() && self.sale_condition.get(&nft_global_id).unwrap().coin == requested_resource.resource_address(){
+                let mut vault = self.vaults.get_mut(&nft_global_id).unwrap();
+                vault.take_non_fungible(nft_global_id.local_id())
+            } else {
+                panic!("The requested resource does not match the price of the NFT");
+            }
+        }
+
+
 
         /// The pool owner can use this function to withdraw funds
         /// from their pool. `caller` must be a proof of the pool
