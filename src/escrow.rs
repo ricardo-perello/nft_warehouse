@@ -281,6 +281,7 @@ mod escrow {
         vaults: KeyValueStore<NonFungibleGlobalId, NonFungibleVault>,
         sale_condition : KeyValueStore<NonFungibleGlobalId, SaleConditions>,
         receipt_generator : ResourceManager,
+        seller_badge_generator : ResourceManager,
     }
 
     impl Escrow {
@@ -289,25 +290,19 @@ mod escrow {
         pub fn instantiate_escrow() -> Global<Escrow>
         {
             let resource = ResourceBuilder::new_ruid_non_fungible::<OwnerReceipt>(OwnerRole::None).create_with_no_initial_supply();
+            let seller_badges_rm = ResourceBuilder::new_fungible(OwnerRole::None).create_with_no_initial_supply();
             Self {
                 vaults: KeyValueStore::new(),
-                
+                sale_condition : KeyValueStore::new(),
                 receipt_generator : resource,
+                seller_badge_generator : seller_badges_rm,
             }
             .instantiate()
                 .prepare_to_globalize(OwnerRole::None)
                 .globalize()
         }
-        /// Anyone can deposit funds into the escrow pool.
-        ///
-        /// The `funds` are deposited into the pool owned by `owner`.
-        ///
-        /// If the depositor provides a proof `allowance_requestor`
-        /// showing that they are a trusted agent they will receive
-        /// back an Allowance to withdraw the amount that they
-        /// deposited in this call.
+        /// Anyone can deposit NFTs into the escrow
         pub fn deposit_nft(&mut self,
-                             owner: NonFungibleGlobalId,
                              nft: NonFungibleBucket,
                              price : Decimal,
                              coin : ResourceAddress)
@@ -315,13 +310,19 @@ mod escrow {
         {
             let resource_address = nft.resource_address();
             let global_id = NonFungibleGlobalId::new(resource_address, nft.non_fungible_local_id());
-            let global_id_clone = global_id.clone();
             let nft_data : OwnerReceipt = OwnerReceipt {
-                deposited_nft: global_id
+                deposited_nft: global_id.clone()
             };
+            
             let nft_receipt : Bucket = self.receipt_generator.mint_ruid_non_fungible(nft_data);
-            self.vaults.insert(global_id_clone, NonFungibleVault::with_bucket(nft));
+            self.vaults.insert(global_id.clone(), NonFungibleVault::with_bucket(nft));
+            self.sale_condition.insert(global_id, SaleConditions{price, coin});
             nft_receipt
+        }
+
+        /// This function allows the us to give the marketplaces a badge to sell our NFTs in escrow
+        pub fn issue_seller_badge(&mut self) -> Bucket {
+            self.seller_badge_generator.mint(1)
         }
 
         /// The pool owner can use this function to withdraw funds
@@ -361,6 +362,7 @@ mod escrow {
         }
 
   
+
 
 
         /// The pool owner can add a non-fungible global id that is
