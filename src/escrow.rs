@@ -16,7 +16,6 @@ pub struct SaleConditions{
 
 #[blueprint]
 mod escrow {
-    use scrypto_test::prelude::NativeNonFungibleVault;
 
 
     /// An Escrow is just a bunch of pools, each pool tied to the
