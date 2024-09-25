@@ -265,22 +265,21 @@ pub struct OwnerReceipt {
 
 pub struct MarketBadge {
 }
-
+#[derive(ScryptoSbor)]
 pub struct SaleConditions{
     price : Decimal,
     coin : ResourceAddress,
-    owner : NonFungibleGlobalId,
 }
+
 #[blueprint]
 mod escrow {
-
 
     /// An Escrow is just a bunch of pools, each pool tied to the
     /// badge of its owner.
     struct Escrow {
         // Vaults : NFTreceipt => Vault
         vaults: KeyValueStore<NonFungibleGlobalId, NonFungibleVault>,
-        sale_condition : KeyValueStore<NonFungibleVault, SaleConditions>,
+        sale_condition : KeyValueStore<NonFungibleGlobalId, SaleConditions>,
         receipt_generator : ResourceManager,
     }
 
@@ -292,6 +291,7 @@ mod escrow {
             let resource = ResourceBuilder::new_ruid_non_fungible::<OwnerReceipt>(OwnerRole::None).create_with_no_initial_supply();
             Self {
                 vaults: KeyValueStore::new(),
+                
                 receipt_generator : resource,
             }
             .instantiate()
