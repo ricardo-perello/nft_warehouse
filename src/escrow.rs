@@ -266,15 +266,21 @@ pub struct OwnerReceipt {
 pub struct MarketBadge {
 }
 
-
-
+pub struct SaleConditions{
+    price : Decimal,
+    coin : ResourceAddress,
+    owner : NonFungibleGlobalId,
+}
 #[blueprint]
 mod escrow {
+
+
     /// An Escrow is just a bunch of pools, each pool tied to the
     /// badge of its owner.
     struct Escrow {
         // Vaults : NFTreceipt => Vault
-        vaults: KeyValueStore<NonFungibleGlobalId, Vault>,
+        vaults: KeyValueStore<NonFungibleGlobalId, NonFungibleVault>,
+        sale_condition : KeyValueStore<NonFungibleVault, SaleConditions>,
         receipt_generator : ResourceManager,
     }
 
@@ -309,43 +315,13 @@ mod escrow {
         {
             let resource_address = nft.resource_address();
             let global_id = NonFungibleGlobalId::new(resource_address, nft.non_fungible_local_id());
+            let global_id_clone = global_id.clone();
             let nft_data : OwnerReceipt = OwnerReceipt {
                 deposited_nft: global_id
             };
             let nft_receipt : Bucket = self.receipt_generator.mint_ruid_non_fungible(nft_data);
-
-            {
-                let pool = self.get_or_add_pool(&owner_nfgid);
-
-                // Create this resource vault if we don't have it already.
-                if pool.vaults.get(&funds.resource_address()).is_none() {
-                    pool.vaults.insert(funds.resource_address(),
-                                       Vault::new(funds.resource_address()));
-                }
-            }
-
-            // Pool the funds
-            let mut pool = self.get_or_add_pool(&owner_nfgid);
-            pool.vaults.get_mut(&funds.resource_address()).unwrap().put(funds);
-
-            maybe_allowance_bucket
-        }
-
-        /// Returns the amount of tokens available for the named
-        /// resource in the named pool. If the pool doesn't exist or
-        /// doesn't have that resource we return zero.
-        pub fn read_funds(&self,
-                          owner: NonFungibleGlobalId,
-                          resource: ResourceAddress) -> Decimal
-        {
-            let pool = self.pools.get(&owner);
-            if let Some(pool) = pool {
-                let vault = pool.vaults.get(&resource);
-                if let Some(vault) = vault {
-                    return vault.amount()
-                }
-            }
-            Decimal::ZERO
+            self.vaults.insert(global_id_clone, NonFungibleVault::with_bucket(nft));
+            nft_receipt
         }
 
         /// The pool owner can use this function to withdraw funds
