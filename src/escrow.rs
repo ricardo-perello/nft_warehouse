@@ -1,263 +1,5 @@
-//! A component that stores funds for you and lets you access them
-//! yourself or issue Allowance NFTs to let others access them.
-//!
-//! Think of an Escrow as an account component external to your
-//! wallet, which is nevertheless under your control. You can use this
-//! Escrow as a central place to hold funds that go into a variety of
-//! services.
-//!
-// ! You can issue Allowance NFTs towards your Escrow and give those
-// ! Allowances to others. Each Allowance NFT acts a bit like an IOU
-// ! that the holder can use to extract funds from your Escrow, for as
-// ! long as funds last.
-// !
-//! You could for example put 10k XRD into an Escrow, issue an
-//! Allowance for 10k XRD and give to your son, and another Allowance
-//! also for 10k XRD and give to your daughter. You explain to them
-//! that these are emergency funds they can dip into if they get into
-//! an emergency situation while travelling. You don't expect these
-//! funds to ever actually get used, but they are there in full for
-//! each of your two kids should the emergency ever arise.
-//!
-//! A single Escrow component can hold any amount of token pools, each
-//! associated with an owner badge. That is, Alice can have a token
-//! pool where she stores all sorts of different tokens while Bob can
-//! also have a token pool on the same Escrow component instance that
-//! Alice does. And of course, Alice or Bob could even have multiple
-//! such sets of pools tied to different ownership badges still on the
-//! same Escrow instance. (In principle there is no reason the world
-//! should need more than a single instance of this component.) For
-//! this reason, when interacting with an Escrow instance you always
-//! need to know which owner badge to access, and which resource type
-//! you're interested in.
-//!
-//! # Some use cases
-//!
-//! ## Curbing your enthusiasm
-//!
-//! You could put funds into Escrow intended for playing an online
-//! game and issue an Allowance to that game that lets it charge its
-//! fees off of the Escrow. By disassociating these payments from your
-//! main account you can feel more safe about giving the game direct
-//! access to funds (since the Escrow only holds as much funds as you
-//! put there), and the Allowance system gives you fine grained
-//! control over how much and how often the game can charge you. Or
-//! you can use it to curb your own excitement: if you set it up so
-//! the game can at max extract, say, 100 XRD per month, then this
-//! effectively caps how much you end up spending on the game when
-//! otherwise the excitement of the moment might have you spending
-//! hundreds in a week without even realizing what's going on before
-//! it's too late.
-//!
-//! ## Central trading account
-//!
-//! You can use an Escrow as a central repository of funds that you
-//! use for trading activities. Markets that recognize the Escrow
-//! concept can make payouts for completed deals into the Escrow
-//! (instead of e.g. holding it inside their own internal vaults until
-//! you come to collect), and can pull funds for covering your trade
-//! deals also from the same Escrow. You could set this up to be
-//! self-perpetuating (if your trades are clever enough) in that the
-//! funds that go into the Escrow from completed deals fund your
-//! future deals that are being taken from the same Escrow. Then every
-//! once in a while you can drop by and skim off some of the profits
-//! that have been happening since last payday.
-//!
-//! ## Selling all your tokens on all the exchanges
-//!
-//! If you're selling a million tokens of some type then instead of
-//! putting them all on a single exchange, and instead of having to
-//! meticulously distribute them across multiple exchanges, you can
-//! put your million tokens in an Escrow and put an Allowance for a
-//! million tokens on every exchange in the world. *All* the exchanges
-//! can then offer your million tokens for sale, and all of them will
-//! be pulling from your Escrow to fulfill trades. Once the Escrow is
-//! empty, the exchanges will automatically no longer be doing those
-//! trades because pulling from the Escrow will yield nothing.
-//!
-//! Note that test scenario 1 demonstrates this type of use case.
-//!
-//! ## Offering to buy more than you can afford
-//!
-//! You could use an Escrow to set up more trade deals than you can
-//! technically afford, by setting up Allowance-backed trade deals
-//! that are only going to actually be completed for so long as the
-//! Escrow holds the necessary funds. Maybe you have 10,000 XRD and
-//! you want to buy either USD or EURO stablecoins depending on which
-//! drops below a certain threshold first. You set up one limit buy
-//! for 10k XRD worth of USD, and one limit buy for 10k XRD worth of
-//! EURO, each backed by Allowances that can pull the full 10k XRD in
-//! your Escrow. Whichever of those happens first will pull all your
-//! funds (and then even if the other happens later the trade won't go
-//! through because you'll be out of funds). Contrast this to having
-//! to bind up XRD into each limit buy in which case you'd end up with
-//! a 5k XRD limit buy of USD and a 5k XRD limit buy of EURO.
-//!
-//! Note that test scenario 2 demonstrates this type of use case.
-//!
-//! ## Giving someone a (traditional) allowance account
-//!
-//! You could set up an Escrow as a funding mechanism for someone
-//! you're helping finance, putting funds into the Escrow and giving
-//! them an Allowance to extract those funds. This would give you
-//! control over their use of the funds (through Allowance rules)
-//! without them having to involve you directly every single time they
-//! need to make a withdrawal.
-//!
-//! # Subsidies
-//!
-//! You can subsidize (internally it uses `lock_fee` or
-//! `lock_contingent_fee`) the current transaction by pulling funds
-//! from your Escrow, using the [subsidize] and [subsidize_contingent]
-//! functions.
-//!
-//! You can also allow others to subsidize transactions by giving them
-//! an Allowance and having them use [subsidize_with_allowance] to
-//! pull XRD from your Escrow to run their transactions. You might be
-//! doing this as a marketing stunt, or it may be a customer support
-//! service, or perhaps it's to let a service run transactions on your
-//! behalf etc.
-//!
-//! When using [subsidize_with_allowance] note the following:
-//!
-//! - If you're using an Accumulating allowance, that allowance will
-//! be reduced by the amount you specify in the function call
-//! regardless of how much actually gets spent on the subsidy. This is
-//! because the component cannot know how much in fees you actually
-//! end up paying. For example if you specify max 10 XRD in the
-//! function call and only 5 XRD gets spent, the allowance remaining
-//! amount is nevertheless reduced by 10 XRD.
-//!
-//! - Failed subsidized transactions will pull funds from your escrow
-//! pool but this will not be reflected in the Allowance itself since
-//! failed transactions cause no on-ledger changes apart from tx
-//! cost. This means that a malicious allowance holder for XRD can use
-//! it to drain your XRD by spamming failing transactions. For this
-//! reason only issue XRD allowances to parties you can trust to be
-//! honest. (This problem could be mitigated by introducing
-//! configuration parameters to allow/disallow subsidies but the
-//! current implementation is more intended to be a tech demo than a
-//! fully deployable product and so this has not been done.)
-//!
-//! # Automatic Allowance issuance
-//!
-//! You can maintain a list of trusted parties who will automatically
-//! receive Allowances whenever they deposit funds into your
-//! account. You may use this if you have multiple different services
-//! interacting with your Escrow pool (different market places
-//! perhaps) and you want each such service to be able to take back
-//! out funds they put in, in order to spend them on services or
-//! trades.
-//!
-//! Such a party will need to provide a badge with a trusted
-//! non-fungible global id, or simply with a trusted resource address,
-//! when calling [deposit_funds] and they will receive back an
-//! Allowance for that amount of the deposit.
-//!
-//! # Public API
-//!
-//! - [instantiate_escrow] Create a new Escrow instance.
-//!
-//! - [deposit_funds] Add funds to your Escrow pool.
-//!
-//! - [read_funds] See how many funds you have available.
-//!
-//! - [withdraw] Pull funds out of your Escrow pool.
-//!
-//! - [withdraw_with_allowance] Use an Allowance to pull funds out of
-//! someone's Escrow pool.
-//!
-//! - [withdraw_all_of] Pull all funds of one type out of your Escrow
-//! pool.
-//!
-//! - [subsidize] Pull XRD from your Escrow pool to subsidize the
-//! current transaction.
-//!
-//! - [subsidize_with_allowance] Use an Allowance to pull XRD out of
-//! someone's Escrow pool to subsidize the current transaction.
-//!
-//! - [subsidize_contingent] Pull XRD from your Escrow pool to
-//! subsidize (contingent on its success) the current transaction.
-//!
-//! - [mint_allowance] Create an Allowance for your Escrow pool.
-//!
-//! - [reduce_allowance_to_amount] Reduce the amount of funds
-//! available in an Allowance you control.
-//!
-//! - [reduce_allowance_by_nflids] Reduce the set of non-fungible ids
-//! available in an Allowance you control.
-//!
-//! - [add_trusted_nfgid] Add a non-fungible global id to the list of
-//! badges you trust to be given automatic Allowances when depositing
-//! to your Escrow pool.
-//!
-//! - [remove_trusted_nfgid] Remove a non-fungible id to the list of
-//! badges you trust.
-//!
-//! - [is_nfgid_trusted] Checks if a given non-fungible is trusted by
-//! a specific Escrow pool.
-//!
-//! - [add_trusted_resource] Add a resource, all badges of which you
-//! trust to be given automatic Allowances.
-//!
-//! - [remove_trusted_resource] Remove a resource from the trusted
-//! resource list.
-//!
-//! - [is_resource_trusted] Checks if a given resource is trusted.
-//!
-//!
-//! # About error messages
-//!
-//! Many error messages that are produced on panics in this code are
-//! preceded with an error code, starting at error code 2000 for this
-//! project. They are there to make each error easily recognizable in
-//! the test suite so that I can easily test that a transaction that
-//! is intended to fail fails for the correct reason.
-//!
-//! Note that as this is a fairly new idea, not all the error messages
-//! have codes at this point.
-//!
-//! # About IndexSet sizes for non-fungible local ids
-//!
-//! Note that use of TokenQuantity introduces a possible cost unit
-//! limit problem when the IndexSet inside gets large. The current
-//! implementation is suitable for a moderate number of
-//! nonfungible-ids in that set, but not very many.
-//!
-//! [instantiate_escrow]: crate::escrow::Escrow::instantiate_escrow
-//! [deposit_funds]: crate::escrow::Escrow::deposit_funds
-//! [read_funds]: crate::escrow::Escrow::read_funds
-//! [withdraw]: crate::escrow::Escrow::withdraw
-//! [withdraw_with_allowance]: crate::escrow::Escrow::withdraw_with_allowance
-//! [withdraw_all_of]: crate::escrow::Escrow::withdraw_all_of
-//! [subsidize]: crate::escrow::Escrow::subsidize
-//! [subsidize_with_allowance]: crate::escrow::Escrow::subsidize_with_allowance
-//! [subsidize_contingent]: crate::escrow::Escrow::subsidize_contingent
-//! [mint_allowance]: crate::escrow::Escrow::mint_allowance
-//! [reduce_allowance_to_amount]: crate::escrow::Escrow::reduce_allowance_to_amount
-//! [reduce_allowance_by_nflids]: crate::escrow::Escrow::reduce_allowance_by_nflids
-//! [add_trusted_nfgid]: crate::escrow::Escrow::add_trusted_nfgid
-//! [remove_trusted_nfgid]: crate::escrow::Escrow::remove_trusted_nfgid
-//! [is_nfgid_trusted]: crate::escrow::Escrow::is_nfgid_trusted
-//! [add_trusted_resource]: crate::escrow::Escrow::add_trusted_resource
-//! [remove_trusted_resource]: crate::escrow::Escrow::remove_trusted_resource
-//! [is_resource_trusted]: crate::escrow::Escrow::is_resource_trusted
-
 use scrypto::prelude::*;
 
-/// An Allowance NFT allows its owner to extract some amount of tokens
-/// from a pool. It is issued by the pool's owner, or it can be
-/// returned to a depositor that is trusted by the pool owner.
-///
-/// Note that in the current implementation the owner of the pool is
-/// able to recall any Allowance NFT issued for that pool. This may be
-/// undesirable for some use cases, e.g. if you're selling an
-/// Allowance to someone then they may want to have guarantees that it
-/// won't be arbitrarily recalled before they use it. This component
-/// should be fairly easy to modify to cover such use cases, e.g. by
-/// having a configuration option or function parameter controlled by
-/// the owner that allows the creation of non-recallable Allowance
-/// NFTs.
 #[derive(ScryptoSbor,ManifestSbor, NonFungibleData)]
 pub struct OwnerReceipt {
     deposited_nft: NonFungibleGlobalId,
@@ -268,11 +10,14 @@ pub struct SaleConditions{
     coin : ResourceAddress,
     vault_nft : Vault,
     vault_tokens : Vault,
+    sold: bool,
 }
 
 
 #[blueprint]
 mod escrow {
+    use scrypto_test::prelude::NativeNonFungibleVault;
+
 
     /// An Escrow is just a bunch of pools, each pool tied to the
     /// badge of its owner.
@@ -317,7 +62,7 @@ mod escrow {
             };
             
             let nft_receipt : Bucket = self.receipt_generator.mint_ruid_non_fungible(nft_data);
-            self.sale_condition.insert(global_id, SaleConditions{price, coin, vault_nft : Vault::with_bucket(nft.into()), vault_tokens : Vault::new(coin) });
+            self.sale_condition.insert(global_id, SaleConditions{price, coin, vault_nft : Vault::with_bucket(nft.into()), vault_tokens : Vault::new(coin), sold : false});
             nft_receipt
         }
 
@@ -329,6 +74,7 @@ mod escrow {
         pub fn exchange(&mut self, seller_proof : Proof, requested_resource : Bucket, nft_global_id : NonFungibleGlobalId) -> NonFungibleBucket{
             seller_proof.check(self.seller_badge_generator.address());
             if self.sale_condition.get(&nft_global_id).unwrap().price == requested_resource.amount() && self.sale_condition.get(&nft_global_id).unwrap().coin == requested_resource.resource_address(){
+                self.sale_condition.get_mut(&nft_global_id).unwrap().sold = true;
                 self.sale_condition.get_mut(&nft_global_id).unwrap().vault_tokens.put(requested_resource);
                 self.sale_condition.get_mut(&nft_global_id).unwrap().vault_nft.as_non_fungible().take_non_fungible(nft_global_id.local_id())
             } else {
@@ -344,37 +90,43 @@ mod escrow {
         ///
         /// If the requested tokens aren't available we will panic.
         pub fn withdraw(&mut self,
-                        caller: Proof,
-                        resource: ResourceAddress) -> Bucket
+                        nft_receipt: Bucket,
+                        ) -> Bucket
         {
-            let (take_nflids, take_amount) = quantity.extract_max_values();
-            self.operate_on_vault(
-                &unchecked_proof_to_nfgid(caller),
-                &resource,
-                None,
-                |mut v| {
-                    let mut bucket: Option<Bucket> = None;
-
-                    // First take the named nflids: if we do this the
-                    // other way around they may no longer be
-                    // available when we try.
-                    if let Some(nflids) = &take_nflids {
-                        bucket = Some(v.as_non_fungible().take_non_fungibles(&nflids).into());
-                    }
-                    // Then take the necessary amount of arbitrary tokens.
-                    if let Some(amount) = take_amount {
-                        if let Some(ref mut bucket) = bucket {
-                            bucket.put(v.take(amount));
-                        } else {
-                            bucket = Some(v.take(amount));
-                        }
-                    }
-                    bucket
-                })
-                .unwrap()
+            
+            let nft_data : OwnerReceipt = nft_receipt.as_non_fungible().non_fungible().data();
+            let nft_global_id = nft_data.deposited_nft;
+            let mut sale_condition = self.sale_condition.get_mut(&nft_global_id).unwrap();
+            if sale_condition.sold {
+                nft_receipt.burn();
+                let amount = sale_condition.price;
+                sale_condition.vault_tokens.take(amount)
+            } else {
+                panic!("The NFT has not been sold yet");
+            }   
         }
 
 
-        
+        /// The pool owner can use this function to withdraw funds
+        /// from their pool. `caller` must be a proof of the pool
+        /// owner.
+        ///
+        /// If the requested tokens aren't available we will panic.
+        pub fn cancel(&mut self,
+            nft_receipt: Bucket,
+            ) -> NonFungibleBucket
+        {
+
+            let nft_data : OwnerReceipt = nft_receipt.as_non_fungible().non_fungible().data();
+            let nft_global_id = nft_data.deposited_nft;
+            let mut sale_condition = self.sale_condition.get_mut(&nft_global_id).unwrap();
+            if !sale_condition.sold {
+                sale_condition.sold = true;
+                nft_receipt.burn();
+                sale_condition.vault_nft.as_non_fungible().take_non_fungible(nft_global_id.local_id())
+            } else {
+                panic!("The NFT has already been sold. You should withdraw the funds instead");
+            }   
+        }
     }
 }
