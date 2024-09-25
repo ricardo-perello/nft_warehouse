@@ -1,8 +1,4 @@
 import "./style.css";
-import radixLogo from "./assets/radix-logo-dark.png";
-import developerImg from "./assets/developer-img.png";
-import devModeGif from "./assets/dev-mode-setup.gif";
-import helloTokens from "./assets/hello-tokens.png";
 import {
   RadixDappToolkit,
   DataRequestBuilder,
@@ -13,8 +9,6 @@ import { GatewayApiClient } from "@radixdlt/babylon-gateway-api-sdk";
 // Inject the navbar into the DOM
 document.querySelector("#navbar-container").innerHTML = `
     <div id="navbar">
-      <img src="${radixLogo}" alt="scrypto logo" id="scrypto-logo" />
-      <img src="${developerImg}" alt="radix logo" id="radix-logo" />
     </div>
     <div id="connect-btn">
       <radix-connect-button />
@@ -116,9 +110,9 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
 // Send a transaction to the wallet when user clicks on the claim token button Id=get-hello-token
 
 
-  
+
   // Get the details of the transaction committed to the ledger
- 
+
 
 
 function checkIfClaimShouldBeEnabled() {
