@@ -266,7 +266,10 @@ pub struct OwnerReceipt {
 pub struct SaleConditions{
     price : Decimal,
     coin : ResourceAddress,
+    vault_nft : Vault,
+    vault_tokens : Vault,
 }
+
 
 #[blueprint]
 mod escrow {
@@ -274,8 +277,6 @@ mod escrow {
     /// An Escrow is just a bunch of pools, each pool tied to the
     /// badge of its owner.
     struct Escrow {
-        // Vaults : NFTreceipt => Vault
-        vaults: KeyValueStore<NonFungibleGlobalId, NonFungibleVault>,
         sale_condition : KeyValueStore<NonFungibleGlobalId, SaleConditions>,
         receipt_generator : ResourceManager,
         seller_badge_generator : ResourceManager,
@@ -294,7 +295,6 @@ mod escrow {
             })
             .create_with_no_initial_supply();
             Self {
-                vaults: KeyValueStore::new(),
                 sale_condition : KeyValueStore::new(),
                 receipt_generator : resource,
                 seller_badge_generator : seller_badges_rm,
@@ -317,12 +317,11 @@ mod escrow {
             };
             
             let nft_receipt : Bucket = self.receipt_generator.mint_ruid_non_fungible(nft_data);
-            self.vaults.insert(global_id.clone(), NonFungibleVault::with_bucket(nft));
-            self.sale_condition.insert(global_id, SaleConditions{price, coin});
+            self.sale_condition.insert(global_id, SaleConditions{price, coin, vault_nft : Vault::with_bucket(nft.into()), vault_tokens : Vault::new(coin) });
             nft_receipt
         }
 
-        /// This function allows the us to give the marketplaces a badge to sell our NFTs in escrow
+        /// This function allows us to give the marketplaces a badge to sell our NFTs in escrow
         pub fn issue_seller_badge(&mut self) -> Bucket {
             self.seller_badge_generator.mint(1)
         }
@@ -330,8 +329,8 @@ mod escrow {
         pub fn exchange(&mut self, seller_proof : Proof, requested_resource : Bucket, nft_global_id : NonFungibleGlobalId) -> NonFungibleBucket{
             seller_proof.check(self.seller_badge_generator.address());
             if self.sale_condition.get(&nft_global_id).unwrap().price == requested_resource.amount() && self.sale_condition.get(&nft_global_id).unwrap().coin == requested_resource.resource_address(){
-                let mut vault = self.vaults.get_mut(&nft_global_id).unwrap();
-                vault.take_non_fungible(nft_global_id.local_id())
+                self.sale_condition.get_mut(&nft_global_id).unwrap().vault_tokens.put(requested_resource);
+                self.sale_condition.get_mut(&nft_global_id).unwrap().vault_nft.as_non_fungible().take_non_fungible(nft_global_id.local_id())
             } else {
                 panic!("The requested resource does not match the price of the NFT");
             }
