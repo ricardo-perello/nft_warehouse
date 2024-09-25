@@ -107,14 +107,6 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
   });
 });
 
-// Send a transaction to the wallet when user clicks on the claim token button Id=get-hello-token
-
-
-
-  // Get the details of the transaction committed to the ledger
-
-
-
 function checkIfClaimShouldBeEnabled() {
   const getHelloTokenBtn = document.querySelector("#get-hello-token");
   // clear the account address when none is connected
