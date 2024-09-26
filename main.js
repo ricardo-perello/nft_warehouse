@@ -7,7 +7,7 @@ import {
 import { GatewayApiClient } from "@radixdlt/babylon-gateway-api-sdk";
 
 // Inject the navbar into the DOM
-document.querySelector("#navbar-container").innerHTML = `
+document.querySelector("#login").innerHTML = `
     <div id="navbar">
     </div>
     <div id="connect-btn">
