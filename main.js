@@ -117,15 +117,14 @@ const closeModalBtn = document.getElementById('closeModal');
 const modal = document.getElementById('addNFTModal');
 
 openModalBtn.addEventListener('click', () => {
-  modal.classList.remove('hidden'); // Mostrar el modal al quitar la clase 'hidden'
+  modal.classList.remove('hidden'); 
 });
 
 // Función para cerrar el modal
 closeModalBtn.addEventListener('click', () => {
-  modal.classList.add('hidden'); // Ocultar el modal al añadir la clase 'hidden'
+  modal.classList.add('hidden'); 
 });
 
-// También puedes cerrar el modal si el usuario hace clic fuera de la ventana del modal
 window.addEventListener('click', (event) => {
   if (event.target === modal) {
     modal.classList.add('hidden');
