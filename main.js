@@ -108,6 +108,27 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
   });
 });
 
+// NFT add Button
+
+const openModalBtn = document.getElementById('openModal');
+const closeModalBtn = document.getElementById('closeModal');
+const modal = document.getElementById('addNFTModal');
+
+openModalBtn.addEventListener('click', () => {
+  modal.classList.remove('hidden'); 
+});
+
+// Función para cerrar el modal
+closeModalBtn.addEventListener('click', () => {
+  modal.classList.add('hidden'); 
+});
+
+window.addEventListener('click', (event) => {
+  if (event.target === modal) {
+    modal.classList.add('hidden');
+  }
+});
+
 
 // Fetch NFTs for a given account
 async function fetchNFTsForAccount(accountAddress) {
