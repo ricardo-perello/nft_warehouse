@@ -36,8 +36,6 @@ console.log("gatewayApi: ", gatewayApi);
 // Global States
 let accounts;
 let accountAddress;
-let componentAddress =
-  "component_tdx_2_1cz44jlxyv0wtu2cj7vrul0eh8jpcfv3ce6ptsnat5guwrdlhfpyydn";
 
 // ************ Fetch the user's account address ************
 rdt.walletApi.setRequestData(DataRequestBuilder.accounts().atLeast(1));
@@ -139,7 +137,7 @@ async function fetchNFTsForAccount(accountAddress) {
       // Fetch each NFT's data
       for (let i = 0; i < nftCount; i++) {
         const nftId = `#${i}#`;
-        await fetchNFTDetails(resourceAddress, nftId);
+        await fetchNFTDetails(accountAddress, resourceAddress, nftId);
       }
     }
   } catch (error) {
@@ -148,7 +146,7 @@ async function fetchNFTsForAccount(accountAddress) {
 }
 
 // Fetch details for each NFT
-async function fetchNFTDetails(resourceAddress, nftId) {
+async function fetchNFTDetails(accountAddress, resourceAddress, nftId) {
   try {
     const response = await fetch("https://stokenet.radixdlt.com/state/non-fungible/data", {
       method: "POST",
@@ -166,27 +164,119 @@ async function fetchNFTDetails(resourceAddress, nftId) {
     console.log(nftDetails);
 
     // Display NFT details
-    displayNFTDetails(nftDetails);
+    displayNFTDetails(accountAddress, nftDetails);
   } catch (error) {
     console.error("Error fetching NFT details:", error);
   }
 }
 
-// Display NFT details in the frontend
-function displayNFTDetails(nftDetails) {
+// // Display NFT details in the frontend
+// function displayNFTDetails(nftDetails) {
+//   const nftContainer = document.querySelector("#nft-container");
+
+//   const nftElement = document.createElement("div");
+//   nftElement.classList.add("nft");
+
+//   nftDetails.forEach((field) => {
+//     const fieldElement = document.createElement("p");
+//     fieldElement.textContent = `${field.field_name}: ${field.value}`;
+//     nftElement.appendChild(fieldElement);
+//   });
+
+//   nftContainer.appendChild(nftElement);
+// }
+
+function displayNFTDetails(accountAddress, nftDetails) {
   const nftContainer = document.querySelector("#nft-container");
 
-  const nftElement = document.createElement("div");
-  nftElement.classList.add("nft");
+  // Create card element
+  const nftCard = document.createElement("div");
+  nftCard.className = "nft-card card-compact bg-base-100 shadow-lg w-[300px] shadow-secondary m-1";
 
-  nftDetails.forEach((field) => {
-    const fieldElement = document.createElement("p");
-    fieldElement.textContent = `${field.field_name}: ${field.value}`;
-    nftElement.appendChild(fieldElement);
+  // Create figure element
+  const figure = document.createElement("figure");
+  figure.className = "relative";
+
+  // Create image element
+  const imgElement = document.createElement("img");
+  if (nftDetails[2].value) {
+    imgElement.src = nftDetails[2].value;
+  } else {
+    imgElement.src = "https://t4.ftcdn.net/jpg/05/17/53/57/360_F_517535712_q7f9QC9X6TQxWi6xYZZbMmw5cnLMr279.jpg";
+  }
+  imgElement.alt = "NFT Image";
+  imgElement.className = "h-60 min-w-full object-cover";
+
+  // Append image to figure
+  figure.appendChild(imgElement);
+
+  // Create card body
+  const cardBody = document.createElement("div");
+  cardBody.className = "m-5 card-body space-y-3";
+
+  // Create title
+  const titleContainer = document.createElement("div");
+  titleContainer.className = "flex items-center justify-center";
+
+  const titleElement = document.createElement("p");
+  titleElement.className = "text-xl p-0 m-0 font-semibold";
+  titleElement.textContent = nftDetails[0].value; // Assuming this is the NFT name
+
+  titleContainer.appendChild(titleElement);
+
+  // Create description
+  const descriptionContainer = document.createElement("div");
+  descriptionContainer.className = "flex flex-col justify-center mt-1";
+
+  const descriptionElement = document.createElement("p");
+  descriptionElement.className = "my-0 text-lg";
+  descriptionElement.textContent = nftDetails[1].value; // Assuming this is the description
+
+  descriptionContainer.appendChild(descriptionElement);
+
+  // Create owner info
+  const ownerContainer = document.createElement("div");
+  ownerContainer.className = "flex space-x-3 mt-1 items-center";
+
+  const ownerLabel = document.createElement("span");
+  ownerLabel.className = "text-lg font-semibold";
+  ownerLabel.textContent = "Owner : ";
+
+  const ownerValue = document.createElement("span");
+  ownerValue.className = "text-sm";
+  ownerValue.textContent = `${accountAddress.slice(0, 10)}...${accountAddress.slice(-4)}`;
+
+  ownerContainer.appendChild(ownerLabel);
+  ownerContainer.appendChild(ownerValue);
+
+  // Create actions container
+  const actionsContainer = document.createElement("div");
+  actionsContainer.className = "card-actions justify-end";
+
+  const sellButton = document.createElement("button");
+  sellButton.className = "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded btn";
+  sellButton.textContent = "Sell";
+  // Optionally add an event listener to handle button clicks
+  sellButton.addEventListener("click", () => {
+    alert(`Sell ${nftDetails[0].value}`);
   });
 
-  nftContainer.appendChild(nftElement);
+  actionsContainer.appendChild(sellButton);
+
+  // Append all elements to the card body
+  cardBody.appendChild(titleContainer);
+  cardBody.appendChild(descriptionContainer);
+  cardBody.appendChild(ownerContainer);
+  cardBody.appendChild(actionsContainer);
+
+  // Append figure and card body to the card
+  nftCard.appendChild(figure);
+  nftCard.appendChild(cardBody);
+
+  // Append the card to the container
+  nftContainer.appendChild(nftCard);
 }
+
 
 function checkIfClaimShouldBeEnabled() {
   const getHelloTokenBtn = document.querySelector("#get-hello-token");
