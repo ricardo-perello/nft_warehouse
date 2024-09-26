@@ -59,8 +59,6 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
     console.log("gatewayApi: ", gatewayApi);
     fetchNFTsForAccount(account.address);
 
-    fetchReceiptsForAccount(account.address);
-
     let shortAddress =
       account.address.slice(0, 4) +
       "..." +
@@ -119,12 +117,8 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
 });
 
 // NFT add Button
-
-const openModalBtn = document.getElementById('openModal');
 const closeModalBtn = document.getElementById('closeModal');
 const modal = document.getElementById('addNFTModal');
-
-
 
 n.addEventListener('click', () => {
   modal.classList.remove('hidden');
@@ -140,7 +134,6 @@ window.addEventListener('click', (event) => {
     modal.classList.add('hidden');
   }
 });
-
 
 // Fetch NFTs for a given account
 async function fetchNFTsForAccount(accountAddress) {
@@ -183,98 +176,9 @@ async function fetchNFTsForAccount(accountAddress) {
     console.error("Error fetching NFTs:", error);
   }
 }
-
-// // Global list to store receipt addresses
-// let globalIdEscrowedNFTs = [];
-
-// // Fetch Receipts for a given account
-// async function fetchReceiptsForAccount(accountAddress) {
-//   try {
-//     // const response = await fetch("https://stokenet.radixdlt.com/state/entity/details", {
-//     //   method: "POST",
-//     //   headers: {
-//     //     "Content-Type": "application/json",
-//     //   },
-//     //   body: JSON.stringify({
-//     //     addresses: [accountAddress],
-//     //   }),
-//     // });
-
-//     const r = await gatewayApi.state.innerClient.stateEntityDetails({
-//       stateEntityDetailsRequest: {
-//         aggregation_level: "Vault",
-//         addresses: [accountAddress],
-//         opt_ins: {
-//           non_fungible_include_nfids: true,
-//         }
-//       },
-//     })
-
-//     console.log(`This is the first ITEM : ${JSON.stringify(r.items)}`)
-//     //".data.programmatic_json.fields.fields[0].value"
-
-//     const accountData = await response.json();
-//     console.log("TEST1");
-//     console.log(accountData);
-
-//     // Extract non-fungible resources
-//     const nonFungibleResources = accountData.items[0].non_fungible_resources.items;
-//     for (const resource of nonFungibleResources) {
-//       const resourceAddress = resource.resource_address;
-//       if (resourceAddress === RECEIPT_ADDRESS) {
-//         const nftCount = resource.amount;
-//         console.log(resourceAddress);
-//         console.log(nftCount);
-
-//         // Fetch each receipt's data
-//         for (let i = 0; i < nftCount; i++) {
-//           const nftId = `#${i}#`;
-//           await fetchReceiptData(resourceAddress, nftId);
-//         }
-//         break;
-//       }
-//     }
-//   } catch (error) {
-//     console.error("Error fetching Receipts:", error);
-//   }
-// }
-
-// // Fetch details for each NFT
-// async function fetchReceiptData(resourceAddress, nftId) {
-//   try {
-//     const response = await fetch("https://stokenet.radixdlt.com/state/non-fungible/data", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({
-//         resource_address: resourceAddress,
-//         non_fungible_ids: [nftId],
-//       }),
-//     });
-
-//     const nftData = await response.json();
-//     const nftDetails = nftData.non_fungible_ids[0].data.programmatic_json.fields;
-//     console.log("TEST2");
-//     console.log(nftDetails);
-
-//     // Assuming the address field is stored under `nftDetails.address`
-//     const receiptAddress = nftDetails.address; // Adjust based on your actual JSON structure
-//     globalIdEscrowedNFTs.push(receiptAddress); // Add to the list
-
-//     console.log(`Stored receipt address: ${receiptAddress}`);
-
-//   } catch (error) {
-//     console.error("Error fetching NFT details:", error);
-//   }
-// }
-
-// You can call fetchReceiptsForAccount and inspect the list after completion
-fetchReceiptsForAccount('accountAddress').then(() => {
-  console.log('All receipt addresses:', receiptAddresses);
-});
-
-
+    const nftData = await response.json();
+    const nftDetails = nftData.non_fungible_ids[0].data.programmatic_json.fields;
+    console.log(nftDetails);
 
 // Fetch details for each NFT
 async function fetchNFTDetails(accountAddress, resourceAddress, nftId) {
@@ -295,13 +199,13 @@ async function fetchNFTDetails(accountAddress, resourceAddress, nftId) {
     console.log(nftDetails);
 
     // Display NFT details
-    displayNFTDetails(resourceAddress, accountAddress, nftDetails);
+    displayNFTDetails(accountAddress, nftDetails);
   } catch (error) {
     console.error("Error fetching NFT details:", error);
   }
 }
 
-function displayNFTDetails(resourceAddress, accountAddress, nftDetails) {
+function displayNFTDetails(accountAddress, nftDetails) {
   const nftContainer = document.querySelector("#nft-container");
   nftContainer.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6";
 
@@ -375,39 +279,6 @@ function displayNFTDetails(resourceAddress, accountAddress, nftDetails) {
 
   sellButton.className = "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded btn";
   sellButton.textContent = "Sell";
-  // Optionally add an event listener to handle button clicks
-  sellButton.addEventListener("click", () => {
-  //   callScryptoMethod(`CALL_METHOD
-  //   Address("${accountAddress}")
-  //   "withdraw_non_fungibles"
-  //   Address("${resourceAddress}")
-  //   Array<NonFungibleLocalId>(
-  //     NonFungibleLocalId("#0#")
-  //   )
-  //   ;`)
-  //   callScryptoMethod(`TAKE_NON_FUNGIBLES_FROM_WORKTOP
-  //     Address("${resourceAddress}")
-  //     Array<NonFungibleLocalId>(
-  //       NonFungibleLocalId("#0#")
-  //     )
-  //     Bucket("escrow_nft")
-  //     ;`)
-  //    // TODO add the price
-  //   callScryptoMethod(`CALL_METHOD
-  //     Address("${COMPONENT_ADDRESS}")
-  //     "deposit_nft"
-  //     Bucket("escrow_nft")
-  //     Decimal("100")
-  //     Address("${resourceAddress}")
-  //   ;
-  //   `)
-  //   callScryptoMethod(`CALL_METHOD
-  //     Address("${accountAddress}")
-  //     "deposit_batch"
-  //     Expression("ENTIRE_WORKTOP")
-  //   ;
-  // `)
-  });
 
   const sellButtons = document.querySelectorAll('.sellButton');
     sellButtons.forEach(button => {
@@ -415,7 +286,6 @@ function displayNFTDetails(resourceAddress, accountAddress, nftDetails) {
     modal.classList.remove('hidden');
   });
 });
-
 
   actionsContainer.appendChild(sellButton);
 
@@ -433,22 +303,6 @@ function displayNFTDetails(resourceAddress, accountAddress, nftDetails) {
   nftContainer.appendChild(nftCard);
 }
 
-// async function callScryptoMethod(manifest) {
-//   try {
-//     // Use the Radix Dapp Toolkit to submit the transaction
-//     const txHash = await rdt.walletApi.submitTransaction(manifest);
-//     console.log("Transaction Hash:", txHash);
-
-//     // Optionally, you can wait for the transaction to be committed
-//     const receipt = await rdt.walletApi.transactionReceipt(txHash);
-//     console.log("Transaction Receipt:", receipt);
-
-//     return receipt;
-//   } catch (error) {
-//     console.error("Error calling Scrypto method:", error);
-//   }
-// }
-
 function checkIfClaimShouldBeEnabled() {
   const getHelloTokenBtn = document.querySelector("#get-hello-token");
   // clear the account address when none is connected
@@ -462,6 +316,7 @@ function checkIfClaimShouldBeEnabled() {
     getHelloTokenBtn.disabled = true;
   }
 }
+
 function checkIfSelectShouldBeEnabled() {
   const selectedValue = document.querySelector(".selected-value");
   const selectBtn = document.querySelector(".select-button");
@@ -478,6 +333,7 @@ function checkIfSelectShouldBeEnabled() {
     selectBtn.removeEventListener("click", toggleCustomSelect);
   }
 }
+
 function toggleCustomSelect() {
   const customSelect = document.querySelector(".custom-select");
   const selectBtn = document.querySelector(".select-button");
