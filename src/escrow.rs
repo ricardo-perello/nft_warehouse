@@ -92,7 +92,7 @@ mod escrow {
                         nft_receipt: Bucket,
                         ) -> Bucket
         {
-            
+            //TODO : fractionalize receipt and return franctionalized withdrawal
             let nft_data : OwnerReceipt = nft_receipt.as_non_fungible().non_fungible().data();
             let nft_global_id = nft_data.deposited_nft;
             let mut sale_condition = self.sale_condition.get_mut(&nft_global_id).unwrap();

@@ -166,6 +166,83 @@ async function fetchNFTsForAccount(accountAddress) {
   }
 }
 
+// Global list to store receipt addresses
+let globalIdEscrowedNFTs = [];
+
+// Fetch NFTs for a given account
+async function fetchReceiptsForAccount(accountAddress) {
+  try {
+    const response = await fetch("https://stokenet.radixdlt.com/state/entity/details", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        addresses: [accountAddress],
+      }),
+    });
+
+    const accountData = await response.json();
+    console.log(accountData);
+
+    // Extract non-fungible resources
+    const nonFungibleResources = accountData.items[0].non_fungible_resources.items;
+    for (const resource of nonFungibleResources) {
+      const resourceAddress = resource.resource_address;
+      if (resourceAddress == RECEIPT_ADDRESS) {  // Assuming RECEIPT_ADDRESS is predefined
+        const nftCount = resource.amount;
+        console.log(resourceAddress);
+        console.log(nftCount);
+
+        // Fetch each receipt's data
+        for (let i = 0; i < nftCount; i++) {
+          const nftId = `#${i}#`;
+          await fetchReceiptData(resourceAddress, nftId);
+        }
+        break;
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching Receipts:", error);
+  }
+}
+
+// Fetch details for each NFT
+async function fetchReceiptData(resourceAddress, nftId) {
+  try {
+    const response = await fetch("https://stokenet.radixdlt.com/state/non-fungible/data", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        resource_address: resourceAddress,
+        non_fungible_ids: [nftId],
+      }),
+    });
+
+    const nftData = await response.json();
+    const nftDetails = nftData.non_fungible_ids[0].data.programmatic_json.fields;
+    console.log(nftDetails);
+
+    // Assuming the address field is stored under `nftDetails.address`
+    const receiptAddress = nftDetails.address; // Adjust based on your actual JSON structure
+    receiptAddresses.push(receiptAddress); // Add to the list
+
+    console.log(`Stored receipt address: ${receiptAddress}`);
+
+  } catch (error) {
+    console.error("Error fetching NFT details:", error);
+  }
+}
+
+// You can call fetchReceiptsForAccount and inspect the list after completion
+fetchReceiptsForAccount('accountAddress').then(() => {
+  console.log('All receipt addresses:', receiptAddresses);
+});
+
+
+
 // Fetch details for each NFT
 async function fetchNFTDetails(accountAddress, resourceAddress, nftId) {
   try {
