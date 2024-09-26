@@ -47,9 +47,12 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
   // add all shared accounts to the account select dropdown
   accounts = walletData.accounts;
   let accountSelect = document.getElementById("select-dropdown");
-  accountSelect.innerHTML = "";
   accounts.map((account) => {
     console.log("account: ", account);
+    // Fetch NFTs for this account
+    console.log("gatewayApi: ", gatewayApi);
+    fetchNFTsForAccount(account.address);
+
     let shortAddress =
       account.address.slice(0, 4) +
       "..." +
@@ -107,13 +110,83 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
   });
 });
 
-// Send a transaction to the wallet when user clicks on the claim token button Id=get-hello-token
 
+// Fetch NFTs for a given account
+async function fetchNFTsForAccount(accountAddress) {
+  try {
+    const response = await fetch("https://stokenet.radixdlt.com/state/entity/details", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        addresses: [accountAddress],
+      }),
+    });
 
+    const accountData = await response.json();
+    console.log(accountData);
 
-  // Get the details of the transaction committed to the ledger
+    // Extract non-fungible resources
+    const nonFungibleResources = accountData.items[0].non_fungible_resources.items;
 
+    for (const resource of nonFungibleResources) {
+      const resourceAddress = resource.resource_address;
+      const nftCount = resource.amount;
+      console.log(resourceAddress);
+      console.log(nftCount);
 
+      // Fetch each NFT's data
+      for (let i = 0; i < nftCount; i++) {
+        const nftId = `#${i}#`;
+        await fetchNFTDetails(resourceAddress, nftId);
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching NFTs:", error);
+  }
+}
+
+// Fetch details for each NFT
+async function fetchNFTDetails(resourceAddress, nftId) {
+  try {
+    const response = await fetch("https://stokenet.radixdlt.com/state/non-fungible/data", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        resource_address: resourceAddress,
+        non_fungible_ids: [nftId],
+      }),
+    });
+
+    const nftData = await response.json();
+    const nftDetails = nftData.non_fungible_ids[0].data.programmatic_json.fields;
+    console.log(nftDetails);
+
+    // Display NFT details
+    displayNFTDetails(nftDetails);
+  } catch (error) {
+    console.error("Error fetching NFT details:", error);
+  }
+}
+
+// Display NFT details in the frontend
+function displayNFTDetails(nftDetails) {
+  const nftContainer = document.querySelector("#nft-container");
+
+  const nftElement = document.createElement("div");
+  nftElement.classList.add("nft");
+
+  nftDetails.forEach((field) => {
+    const fieldElement = document.createElement("p");
+    fieldElement.textContent = `${field.field_name}: ${field.value}`;
+    nftElement.appendChild(fieldElement);
+  });
+
+  nftContainer.appendChild(nftElement);
+}
 
 function checkIfClaimShouldBeEnabled() {
   const getHelloTokenBtn = document.querySelector("#get-hello-token");
