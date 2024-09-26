@@ -132,6 +132,8 @@ const openModalBtn = document.getElementById('openModal');
 const closeModalBtn = document.getElementById('closeModal');
 const modal = document.getElementById('addNFTModal');
 
+
+
 openModalBtn.addEventListener('click', () => {
   modal.classList.remove('hidden');
 });
@@ -346,6 +348,7 @@ function displayNFTDetails(resourceAddress, accountAddress, nftDetails) {
 
   titleContainer.appendChild(titleElement);
 
+
   // Create description
   const descriptionContainer = document.createElement("div");
   descriptionContainer.className = "flex flex-col justify-center mt-1";
@@ -376,6 +379,8 @@ function displayNFTDetails(resourceAddress, accountAddress, nftDetails) {
   actionsContainer.className = "card-actions justify-end";
 
   const sellButton = document.createElement("button");
+
+
   sellButton.className = "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded btn";
   sellButton.textContent = "Sell";
   // Optionally add an event listener to handle button clicks
@@ -411,6 +416,14 @@ function displayNFTDetails(resourceAddress, accountAddress, nftDetails) {
     ;
   `)
   });
+
+  const sellButtons = document.querySelectorAll('.sellButton');
+    sellButtons.forEach(button => {
+    button.addEventListener('click', () => {
+    modal.classList.remove('hidden');
+  });
+});
+
 
   actionsContainer.appendChild(sellButton);
 
