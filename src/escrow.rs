@@ -1,8 +1,8 @@
 use scrypto::prelude::*;
 
-#[derive(ScryptoSbor,ManifestSbor, NonFungibleData)]
+#[derive(ScryptoSbor, NonFungibleData)]
 pub struct OwnerReceipt {
-    deposited_nft: NonFungibleGlobalId,
+    pub deposited_nft: NonFungibleGlobalId,
 }
 #[derive(ScryptoSbor)]
 pub struct SaleConditions{
@@ -14,7 +14,7 @@ pub struct SaleConditions{
 }
 
 
-#[blueprint]
+#[blueprint] 
 mod escrow {
 
 
@@ -22,7 +22,7 @@ mod escrow {
     /// badge of its owner.
     struct Escrow {
         sale_condition : KeyValueStore<NonFungibleGlobalId, SaleConditions>,
-        receipt_generator : ResourceManager,
+         receipt_generator : ResourceManager,
         seller_badge_generator : ResourceManager,
     }
 
@@ -38,6 +38,7 @@ mod escrow {
                 withdrawer_updater => rule!(deny_all);
             })
             .create_with_no_initial_supply();
+
             Self {
                 sale_condition : KeyValueStore::new(),
                 receipt_generator : resource,
@@ -47,15 +48,17 @@ mod escrow {
                 .prepare_to_globalize(OwnerRole::None)
                 .globalize()
         }
-        /// Anyone can deposit NFTs into the escrow
+
+        /// Anyone can deposit NFTs into the escrow and get a corresponding receipt back.
         pub fn deposit_nft(&mut self,
-                             nft: NonFungibleBucket,
+                             nft: Bucket,
                              price : Decimal,
                              coin : ResourceAddress)
                              -> Bucket
         {
+            let n = nft.as_non_fungible(); //Check bucket contains nft
             let resource_address = nft.resource_address();
-            let global_id = NonFungibleGlobalId::new(resource_address, nft.non_fungible_local_id());
+            let global_id = NonFungibleGlobalId::new(resource_address, n.non_fungible_local_id());
             let nft_data : OwnerReceipt = OwnerReceipt {
                 deposited_nft: global_id.clone()
             };
@@ -66,13 +69,16 @@ mod escrow {
         }
 
         /// This function allows us to give the marketplaces a badge to sell our NFTs in escrow
+        /// TODO : check needs to be added to seller, i.e (conceptually) Proof of authetic marketplace
         pub fn issue_seller_badge(&mut self) -> Bucket {
             self.seller_badge_generator.mint(1)
         }
 
+        /// This function allows us to exchange the NFT for the requested resource that the user set as long as we have a proof from the seller that he has 
+        /// the badge to sell the NFT issued by "issue_seller_badge"
         pub fn exchange(&mut self, seller_proof : Proof, requested_resource : Bucket, nft_global_id : NonFungibleGlobalId) -> NonFungibleBucket{
             seller_proof.check(self.seller_badge_generator.address());
-            if self.sale_condition.get(&nft_global_id).unwrap().price == requested_resource.amount() && self.sale_condition.get(&nft_global_id).unwrap().coin == requested_resource.resource_address(){
+            if self.sale_condition.get(&nft_global_id).unwrap().price >= requested_resource.amount() && self.sale_condition.get(&nft_global_id).unwrap().coin == requested_resource.resource_address(){
                 self.sale_condition.get_mut(&nft_global_id).unwrap().sold = true;
                 self.sale_condition.get_mut(&nft_global_id).unwrap().vault_tokens.put(requested_resource);
                 self.sale_condition.get_mut(&nft_global_id).unwrap().vault_nft.as_non_fungible().take_non_fungible(nft_global_id.local_id())
@@ -86,7 +92,7 @@ mod escrow {
         /// The pool owner can use this function to withdraw funds
         /// from their pool. `caller` must be a proof of the pool
         /// owner.
-        ///
+        ///nted: Not implemented for non-wasm targets
         /// If the requested tokens aren't available we will panic.
         pub fn withdraw(&mut self,
                         nft_receipt: Bucket,
