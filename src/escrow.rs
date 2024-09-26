@@ -22,7 +22,7 @@ mod escrow {
     /// badge of its owner.
     struct Escrow {
         sale_condition : KeyValueStore<NonFungibleGlobalId, SaleConditions>,
-         receipt_generator : ResourceManager,
+        receipt_generator : ResourceManager,
         seller_badge_generator : ResourceManager,
     }
 
@@ -48,11 +48,21 @@ mod escrow {
                 minter_updater => rule!(deny_all);
                 ))
             .burn_roles(burn_roles!{
-                burner => global_caller_badge_rule;
+                burner => global_caller_badge_rule.clone();
                 burner_updater => rule!(deny_all);
             })
             .create_with_no_initial_supply();
+
+
             let seller_badges_rm = ResourceBuilder::new_fungible(OwnerRole::None)
+            .mint_roles(mint_roles!(
+                minter => global_caller_badge_rule.clone();
+                minter_updater => rule!(deny_all);
+                ))
+            .burn_roles(burn_roles!{
+                burner => global_caller_badge_rule;
+                burner_updater => rule!(deny_all);
+            })
             .withdraw_roles(withdraw_roles!{
                 withdrawer => rule!(deny_all);
                 withdrawer_updater => rule!(deny_all);
