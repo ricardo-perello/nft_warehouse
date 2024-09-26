@@ -33,6 +33,9 @@ console.log("dApp Toolkit: ", rdt);
 const gatewayApi = GatewayApiClient.initialize(rdt.gatewayApi.clientConfig);
 console.log("gatewayApi: ", gatewayApi);
 
+
+const RECEIPT_ADDRESS = "resource_tdx_2_1nts6rugeg8j6dqh8529qcefaaveln5x6axxyf6jnjr4tgrvq89dm7u";
+
 // Global States
 let accounts;
 let accountAddress;
@@ -189,52 +192,23 @@ let globalIdEscrowedNFTs = [];
 
 // Fetch NFTs for a given account
 async function fetchReceiptsForAccount(accountAddress) {
-  try {
-    const response = await fetch("https://stokenet.radixdlt.com/state/entity/details", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        addresses: [accountAddress],
-      }),
-    });
 
-    const r = await gatewayApi.state.innerClient.stateEntityDetails({
-      stateEntityDetailsRequest: {
-        aggregation_level: "Vault",
-        addresses: [accountAddress],
-        opt_ins: {
-          non_fungible_include_nfids: true,
-        }
-      },
-    })
-
-    console.log(r.items[0])
-
-    const accountData = await response.json();
-    console.log(accountData);
-
-    // Extract non-fungible resources
-    const nonFungibleResources = accountData.items[0].non_fungible_resources.items;
-    for (const resource of nonFungibleResources) {
-      const resourceAddress = resource.resource_address;
-      if (resourceAddress == RECEIPT_ADDRESS) {  // Assuming RECEIPT_ADDRESS is predefined
-        const nftCount = resource.amount;
-        console.log(resourceAddress);
-        console.log(nftCount);
-
-        // Fetch each receipt's data
-        for (let i = 0; i < nftCount; i++) {
-          const nftId = `#${i}#`;
-          await fetchReceiptData(resourceAddress, nftId);
-        }
-        break;
-      }
+const r = await gatewayApi.state.innerClient.stateEntityDetails({
+  stateEntityDetailsRequest: {
+    aggregation_level: "Vault",
+    addresses: [`account_tdx_2_12x3g5pyaamcl3hqgra48a844wfy0zprenfztz9g2fxp494ckzxlk57`],
+    opt_ins: {
+      non_fungible_include_nfids: true,
     }
-  } catch (error) {
-    console.error("Error fetching Receipts:", error);
-  }
+  },
+})
+
+let receipts = r.filter((resource) => resource.non_fungible_resources.items[0].resource_address == RECEIPT_ADDRESS);
+
+receipts.items.forEach((resource) => {
+  console.log("fid",resource.non_fungible_resources.items[0].non_fungible_id)
+  fetchReceiptData(RECEIPT_ADDRESS, resource.non_fungible_resources.items[0].non_fungible_id)
+})
 }
 
 // Fetch details for each NFT
