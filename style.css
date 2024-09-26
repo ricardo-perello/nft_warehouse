@@ -472,3 +472,17 @@ h3 {
 .account-appearance-11 {
   background: var(--account-appearance-11);
 }
+
+#no-nft-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full viewport height to center vertically */
+  text-align: center; /* Center text inside the container */
+}
+
+.important-message {
+  font-size: 1.5em; /* Bigger font size */
+  font-weight: bold; /* Bold text */
+  margin: 0; /* Remove default margin */
+}
