@@ -42,6 +42,16 @@ rdt.walletApi.setRequestData(DataRequestBuilder.accounts().atLeast(1));
 // Subscribe to updates to the user's shared wallet data
 rdt.walletApi.walletData$.subscribe((walletData) => {
   console.log("subscription wallet data: ", walletData);
+
+  const nftContainer = document.querySelector("#nft-container");
+  nftContainer.innerHTML = "";
+  if (walletData.accounts.length === 0) {
+    // User not logged in
+    nftContainer.className = "grid grid-col-1 md:grid-row-2";
+    nftContainer.innerHTML = "<p class='important-message'>You must be logged in to view your NFTs and put them up for sale.</p>";
+    return;
+  }
+
   // add all shared accounts to the account select dropdown
   accounts = walletData.accounts;
   let accountSelect = document.getElementById("select-dropdown");
@@ -115,12 +125,12 @@ const closeModalBtn = document.getElementById('closeModal');
 const modal = document.getElementById('addNFTModal');
 
 openModalBtn.addEventListener('click', () => {
-  modal.classList.remove('hidden'); 
+  modal.classList.remove('hidden');
 });
 
 // Función para cerrar el modal
 closeModalBtn.addEventListener('click', () => {
-  modal.classList.add('hidden'); 
+  modal.classList.add('hidden');
 });
 
 window.addEventListener('click', (event) => {
@@ -148,6 +158,12 @@ async function fetchNFTsForAccount(accountAddress) {
 
     // Extract non-fungible resources
     const nonFungibleResources = accountData.items[0].non_fungible_resources.items;
+
+    if (nonFungibleResources.length === 0) {
+      // No NFTs found for this account
+      const nftContainer = document.querySelector("#nft-container");
+      nftContainer.innerHTML += "<p>You don't have any NFT in your account.</p>";
+    }
 
     for (const resource of nonFungibleResources) {
       const resourceAddress = resource.resource_address;
@@ -268,24 +284,9 @@ async function fetchNFTDetails(accountAddress, resourceAddress, nftId) {
   }
 }
 
-// // Display NFT details in the frontend
-// function displayNFTDetails(nftDetails) {
-//   const nftContainer = document.querySelector("#nft-container");
-
-//   const nftElement = document.createElement("div");
-//   nftElement.classList.add("nft");
-
-//   nftDetails.forEach((field) => {
-//     const fieldElement = document.createElement("p");
-//     fieldElement.textContent = `${field.field_name}: ${field.value}`;
-//     nftElement.appendChild(fieldElement);
-//   });
-
-//   nftContainer.appendChild(nftElement);
-// }
-
 function displayNFTDetails(accountAddress, nftDetails) {
   const nftContainer = document.querySelector("#nft-container");
+  nftContainer.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6";
 
   // Create card element
   const nftCard = document.createElement("div");
@@ -318,7 +319,7 @@ function displayNFTDetails(accountAddress, nftDetails) {
 
   const titleElement = document.createElement("p");
   titleElement.className = "text-xl p-0 m-0 font-semibold";
-  titleElement.textContent = nftDetails[0].value; // Assuming this is the NFT name
+  titleElement.textContent = nftDetails[0].value;
 
   titleContainer.appendChild(titleElement);
 
@@ -328,7 +329,7 @@ function displayNFTDetails(accountAddress, nftDetails) {
 
   const descriptionElement = document.createElement("p");
   descriptionElement.className = "my-0 text-lg";
-  descriptionElement.textContent = nftDetails[1].value; // Assuming this is the description
+  descriptionElement.textContent = nftDetails[1].value;
 
   descriptionContainer.appendChild(descriptionElement);
 
