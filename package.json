@@ -14,6 +14,7 @@
   "dependencies": {
     "@radixdlt/babylon-gateway-api-sdk": "^1.6.1",
     "@radixdlt/radix-dapp-toolkit": "^2.1.1",
+    "reactjs-popup": "^2.0.6",
     "scrypto": "^1.0.3"
   }
 }

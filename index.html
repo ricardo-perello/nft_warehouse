@@ -110,20 +110,21 @@
       <div class="flex justify-between items-center mb-6">
         <h1 class="text-4xl font-bold">My NFTs</h1>
         <button
+          id="openModal"
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center btn">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd"
               d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
               clip-rule="evenodd" />
           </svg>
-          Add NFT
+            Add NFT
         </button>
 
       </div>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div id = "nft-container">
       <!-- NFT Card 1 -->
-      <div class="nft-card card-compact bg-base-100 shadow-lg w-[300px] shadow-secondary m-1">
+      <!-- <div class="nft-card card-compact bg-base-100 shadow-lg w-[300px] shadow-secondary m-1">
         <figure class="relative">
           <img src="http://212.237.0.141/Codecrypto-NFT/Defi.png" alt="NFT Image" class="h-60 min-w-full object-cover">
           <figcaption class="glass absolute bottom-4 left-4 p-4 w-25 rounded-xl">
@@ -148,7 +149,7 @@
             </button>
           </div>
         </div>
-      </div>
+      </div>-->
       <!-- NFT Card 2 -->
       <div class="nft-card card-compact bg-base-100 shadow-lg w-[300px] shadow-secondary">
         <figure class="relative">
@@ -181,7 +182,7 @@
         <figure class="relative">
           <img src="http://212.237.0.141/Codecrypto-NFT/Defi.png" alt="NFT Image" class="h-60 min-w-full object-cover">
           <figcaption class="glass absolute bottom-4 left-4 p-4 w-25 rounded-xl">
-            <span class="text-white"># 3</span>
+            <span class="text-white"># 2</span>
           </figcaption>
         </figure>
         <div class="m-5 card-body space-y-3">
@@ -208,7 +209,7 @@
         <figure class="relative">
           <img src="http://212.237.0.141/Codecrypto-NFT/Defi.png" alt="NFT Image" class="h-60 min-w-full object-cover">
           <figcaption class="glass absolute bottom-4 left-4 p-4 w-25 rounded-xl">
-            <span class="text-white"># 4</span>
+            <span class="text-white"># 2</span>
           </figcaption>
         </figure>
         <div class="m-5 card-body space-y-3">
@@ -235,7 +236,7 @@
         <figure class="relative">
           <img src="http://212.237.0.141/Codecrypto-NFT/Defi.png" alt="NFT Image" class="h-60 min-w-full object-cover">
           <figcaption class="glass absolute bottom-4 left-4 p-4 w-25 rounded-xl">
-            <span class="text-white"># 5</span>
+            <span class="text-white"># 2</span>
           </figcaption>
         </figure>
         <div class="m-5 card-body space-y-3">
@@ -262,7 +263,7 @@
         <figure class="relative">
           <img src="http://212.237.0.141/Codecrypto-NFT/Defi.png" alt="NFT Image" class="h-60 min-w-full object-cover">
           <figcaption class="glass absolute bottom-4 left-4 p-4 w-25 rounded-xl">
-            <span class="text-white"># 6</span>
+            <span class="text-white"># 2</span>
           </figcaption>
         </figure>
         <div class="m-5 card-body space-y-3">
@@ -289,7 +290,7 @@
         <figure class="relative">
           <img src="http://212.237.0.141/Codecrypto-NFT/Defi.png" alt="NFT Image" class="h-60 min-w-full object-cover">
           <figcaption class="glass absolute bottom-4 left-4 p-4 w-25 rounded-xl">
-            <span class="text-white"># 7</span>
+            <span class="text-white"># 2</span>
           </figcaption>
         </figure>
         <div class="m-5 card-body space-y-3">
@@ -316,7 +317,7 @@
         <figure class="relative">
           <img src="http://212.237.0.141/Codecrypto-NFT/Defi.png" alt="NFT Image" class="h-60 min-w-full object-cover">
           <figcaption class="glass absolute bottom-4 left-4 p-4 w-25 rounded-xl">
-            <span class="text-white"># 8</span>
+            <span class="text-white"># 2</span>
           </figcaption>
         </figure>
         <div class="m-5 card-body space-y-3">
@@ -366,7 +367,7 @@
                     class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                 </div>
                 <div>
-                  <label for="nftPrice" class="block text-sm font-medium text-gray-300">Price (ETH)</label>
+                  <label for="nftPrice" class="block text-sm font-medium text-gray-300">Price (RDX)</label>
                   <input type="text" name="nftPrice" id="nftPrice"
                     class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                 </div>
@@ -378,8 +379,7 @@
               class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm btn">
               Add NFT
             </button>
-            <button type="button"
-              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm btn">
+            <button id="closeModal" type="button" class="bg-gray-500 text-white font-bold py-2 px-4 rounded">
               Cancel
             </button>
           </div>
