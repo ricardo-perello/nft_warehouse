@@ -67,6 +67,7 @@ mod escrow {
                 withdrawer => rule!(deny_all);
                 withdrawer_updater => rule!(deny_all);
             })
+            .divisibility(0)
             .create_with_no_initial_supply();
 
             Self {
