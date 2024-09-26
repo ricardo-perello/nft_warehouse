@@ -31,7 +31,27 @@ mod escrow {
         /// particular power over it or its users.
         pub fn instantiate_escrow() -> Global<Escrow>
         {
-            let resource = ResourceBuilder::new_ruid_non_fungible::<OwnerReceipt>(OwnerRole::None).create_with_no_initial_supply();
+
+            let (
+                gumball_machine_address_reservation,
+                gumball_machine_component_address,
+            ) = Runtime::allocate_component_address(
+                Escrow::blueprint_id(),
+            );
+            let global_caller_badge_rule = rule!(require(global_caller(
+                gumball_machine_component_address
+            )));
+
+            let resource = ResourceBuilder::new_ruid_non_fungible::<OwnerReceipt>(OwnerRole::None)
+            .mint_roles(mint_roles!(
+                minter => global_caller_badge_rule.clone();
+                minter_updater => rule!(deny_all);
+                ))
+            .burn_roles(burn_roles!{
+                burner => global_caller_badge_rule;
+                burner_updater => rule!(deny_all);
+            })
+            .create_with_no_initial_supply();
             let seller_badges_rm = ResourceBuilder::new_fungible(OwnerRole::None)
             .withdraw_roles(withdraw_roles!{
                 withdrawer => rule!(deny_all);
@@ -45,6 +65,7 @@ mod escrow {
             }
             .instantiate()
                 .prepare_to_globalize(OwnerRole::None)
+                .with_address(gumball_machine_address_reservation)
                 .globalize()
         }
         /// Anyone can deposit NFTs into the escrow
