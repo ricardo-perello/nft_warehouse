@@ -1,5 +1,40 @@
 body {
-  margin: 0;
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: linear-gradient(to bottom right, #1a1a2e, #16213e);
+  color: #e94560;
+}
+
+.nav-menu {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.nft-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.nft-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.btn {
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content {
+  background: rgba(26, 26, 46, 0.95);
+  backdrop-filter: blur(10px);
 }
 
 main {
@@ -13,6 +48,45 @@ main {
 img {
   max-width: 100%;
   height: auto;
+}
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: linear-gradient(to bottom right, #1a1a2e, #16213e);
+  color: #e94560;
+}
+
+.nav-menu {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.nft-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.nft-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.btn {
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content {
+  background: rgba(26, 26, 46, 0.95);
+  backdrop-filter: blur(10px);
 }
 
 .heading-section {
