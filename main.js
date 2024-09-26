@@ -198,6 +198,18 @@ async function fetchReceiptsForAccount(accountAddress) {
       }),
     });
 
+    const r = await gatewayApi.state.innerClient.stateEntityDetails({
+      stateEntityDetailsRequest: {
+        aggregation_level: "Vault",
+        addresses: [accountAddress],
+        opt_ins: {
+          non_fungible_include_nfids: true,
+        }
+      },
+    })
+
+    console.log(r.items[0])
+
     const accountData = await response.json();
     console.log(accountData);
 
