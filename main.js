@@ -20,12 +20,6 @@ document.querySelector("#login").innerHTML = `
 const dAppDefinitionAddress =
   "account_tdx_2_12y7ue9sslrkpywpgqyu3nj8cut0uu5arpr7qyalz7y9j7j5q4ayhv6";
 
-const RECEIPT_ADDRESS =
-"resource_tdx_2_1n2n92fk0yuhggvmdm0297xwn9rh3jvz0m0vy2fpjdmtenq95rql60j";
-
-const COMPONENT_ADDRESS =
-"component_tdx_2_1czr0mkjnkah3kl2um2ya3mjfu6wfk078lz4fxmg402hjrc4qsmvssy";
-
 // Instantiate Radix Dapp Toolkit for connect button and wallet usage.
 const rdt = RadixDappToolkit({
   networkId: RadixNetwork.Stokenet,
@@ -66,8 +60,6 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
     // Fetch NFTs for this account
     console.log("gatewayApi: ", gatewayApi);
     fetchNFTsForAccount(account.address);
-
-    fetchReceiptsForAccount(account.address);
 
     let shortAddress =
       account.address.slice(0, 4) +
@@ -195,18 +187,18 @@ async function fetchNFTsForAccount(accountAddress) {
 // Global list to store receipt addresses
 let globalIdEscrowedNFTs = [];
 
-// Fetch Receipts for a given account
+// Fetch NFTs for a given account
 async function fetchReceiptsForAccount(accountAddress) {
   try {
-    // const response = await fetch("https://stokenet.radixdlt.com/state/entity/details", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     addresses: [accountAddress],
-    //   }),
-    // });
+    const response = await fetch("https://stokenet.radixdlt.com/state/entity/details", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        addresses: [accountAddress],
+      }),
+    });
 
     const r = await gatewayApi.state.innerClient.stateEntityDetails({
       stateEntityDetailsRequest: {
@@ -218,18 +210,16 @@ async function fetchReceiptsForAccount(accountAddress) {
       },
     })
 
-    console.log(`This is the first ITEM : ${JSON.stringify(r.items)}`)
-    //".data.programmatic_json.fields.fields[0].value"
+    console.log(r.items[0])
 
     const accountData = await response.json();
-    console.log("TEST1");
     console.log(accountData);
 
     // Extract non-fungible resources
     const nonFungibleResources = accountData.items[0].non_fungible_resources.items;
     for (const resource of nonFungibleResources) {
       const resourceAddress = resource.resource_address;
-      if (resourceAddress === RECEIPT_ADDRESS) {
+      if (resourceAddress == RECEIPT_ADDRESS) {  // Assuming RECEIPT_ADDRESS is predefined
         const nftCount = resource.amount;
         console.log(resourceAddress);
         console.log(nftCount);
@@ -263,7 +253,6 @@ async function fetchReceiptData(resourceAddress, nftId) {
 
     const nftData = await response.json();
     const nftDetails = nftData.non_fungible_ids[0].data.programmatic_json.fields;
-    console.log("TEST2");
     console.log(nftDetails);
 
     // Assuming the address field is stored under `nftDetails.address`
@@ -303,13 +292,13 @@ async function fetchNFTDetails(accountAddress, resourceAddress, nftId) {
     console.log(nftDetails);
 
     // Display NFT details
-    displayNFTDetails(resourceAddress, accountAddress, nftDetails);
+    displayNFTDetails(accountAddress, nftDetails);
   } catch (error) {
     console.error("Error fetching NFT details:", error);
   }
 }
 
-function displayNFTDetails(resourceAddress, accountAddress, nftDetails) {
+function displayNFTDetails(accountAddress, nftDetails) {
   const nftContainer = document.querySelector("#nft-container");
   nftContainer.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6";
 
@@ -379,51 +368,24 @@ function displayNFTDetails(resourceAddress, accountAddress, nftDetails) {
   actionsContainer.className = "card-actions justify-end";
 
   const sellButton = document.createElement("button");
-
-
+  
+  
   sellButton.className = "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded btn";
   sellButton.textContent = "Sell";
   // Optionally add an event listener to handle button clicks
   sellButton.addEventListener("click", () => {
-    callScryptoMethod(`CALL_METHOD
-    Address("${accountAddress}")
-    "withdraw_non_fungibles"
-    Address("${resourceAddress}")
-    Array<NonFungibleLocalId>(
-      NonFungibleLocalId("#0#")
-    )
-    ;`)
-    callScryptoMethod(`TAKE_NON_FUNGIBLES_FROM_WORKTOP
-      Address("${resourceAddress}")
-      Array<NonFungibleLocalId>(
-        NonFungibleLocalId("#0#")
-      )
-      Bucket("escrow_nft")
-      ;`)
-     // TODO add the price
-    callScryptoMethod(`CALL_METHOD
-      Address("${COMPONENT_ADDRESS}")
-      "deposit_nft"
-      Bucket("escrow_nft")
-      Decimal("100")
-      Address("${resourceAddress}")
-    ;
-    `)
-    callScryptoMethod(`CALL_METHOD
-      Address("${accountAddress}")
-      "deposit_batch"
-      Expression("ENTIRE_WORKTOP")
-    ;
-  `)
+    modal.classList.remove('hidden');
+    
+     // alert(`Sell ${nftDetails[0].value}`);
   });
 
   const sellButtons = document.querySelectorAll('.sellButton');
     sellButtons.forEach(button => {
     button.addEventListener('click', () => {
-    modal.classList.remove('hidden');
+    modal.classList.remove('hidden');  
   });
 });
-
+  
 
   actionsContainer.appendChild(sellButton);
 
@@ -441,55 +403,6 @@ function displayNFTDetails(resourceAddress, accountAddress, nftDetails) {
   nftContainer.appendChild(nftCard);
 }
 
-async function callFunctionsOnRadix(userAddress, resourceAddress, BucketAddress, LocalId) {
-  `CALL_METHOD
-  Address("")
-  "withdraw_non_fungibles"
-  Address("resource_tdx_2_1ngm9pu5scw6atxhdxwhttndr96vk39z2gdunzfx3wk6hghynq76csj")
-  Array<NonFungibleLocalId>(
-    NonFungibleLocalId("#0#")
-  )
-;
-
-TAKE_NON_FUNGIBLES_FROM_WORKTOP
-  Address("resource_tdx_2_1ngm9pu5scw6atxhdxwhttndr96vk39z2gdunzfx3wk6hghynq76csj")
-  Array<NonFungibleLocalId>(
-    NonFungibleLocalId("#0#")
-  )
-  Bucket("escrow_nft")
-;
-
-CALL_METHOD
-  Address("${COMPONENT_ADDRESS}")
-  "deposit_nft"
-  Bucket("escrow_nft")
-  Decimal("${PRICE}")
-  Address("resource_tdx_2_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxtfd2jc")
-;
-
-CALL_METHOD
-  Address("account_tdx_2_128w5upl9azzr2x2tgv3fkdk6awvd52j2zygj73f7rv7pm3ukzgufyd")
-  "deposit_batch"
-  Expression("ENTIRE_WORKTOP")
-;
-  `
-}
-
-async function callScryptoMethod(manifest) {
-  try {
-    // Use the Radix Dapp Toolkit to submit the transaction
-    const txHash = await rdt.walletApi.submitTransaction(manifest);
-    console.log("Transaction Hash:", txHash);
-
-    // Optionally, you can wait for the transaction to be committed
-    const receipt = await rdt.walletApi.transactionReceipt(txHash);
-    console.log("Transaction Receipt:", receipt);
-
-    return receipt;
-  } catch (error) {
-    console.error("Error calling Scrypto method:", error);
-  }
-}
 
 function checkIfClaimShouldBeEnabled() {
   const getHelloTokenBtn = document.querySelector("#get-hello-token");
