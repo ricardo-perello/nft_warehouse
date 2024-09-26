@@ -243,7 +243,7 @@ async function fetchReceiptData(resourceAddress, nftId) {
 
     // Assuming the address field is stored under `nftDetails.address`
     const receiptAddress = nftDetails.address; // Adjust based on your actual JSON structure
-    receiptAddresses.push(receiptAddress); // Add to the list
+    globalIdEscrowedNFTs.push(receiptAddress); // Add to the list
 
     console.log(`Stored receipt address: ${receiptAddress}`);
 
