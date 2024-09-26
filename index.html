@@ -19,6 +19,13 @@
       color: #e94560;
     }
 
+    .nav-menu {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
     .nft-card {
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(10px);
@@ -56,13 +63,13 @@
             <img class="" src="logo.png" alt="NFT Warehouse Logo">
           </a>
           <div class="hidden md:block">
-            <div class="ml-10 flex items-baseline space-x-4">
-              <a href="#"
+            <div class="ml-10 flex items-baseline margin-left: 10.5rem;">
+              <!-- <a href="#"
                 class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Home</a>
               <a href="#"
                 class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Explore</a>
               <a href="#"
-                class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">About</a>
+                class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">About</a> -->
               <div class="hidden md:block" id="login"></div>
             </div>
           </div>
@@ -87,20 +94,13 @@
     </div>
     <div class="md:hidden" id="mobile-menu">
       <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-        <a href="#"
+        <!-- <a href="#"
           class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Home</a>
         <a href="#"
           class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Explore</a>
         <a href="#"
-          class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">About</a>
+          class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">About</a> -->
         <div class="hidden md:block" id="login"></div>
-      </div>
-      <div class="pt-4 pb-3 border-t border-gray-700">
-        <div class="flex items-center px-5">
-          <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded btn">
-            Login
-          </button>
-        </div>
       </div>
     </div>
   </div>
@@ -108,48 +108,17 @@
   <main class="pt-20">
     <div class="container mx-auto p-4">
       <div class="flex justify-between items-center mb-6">
-        <h1 class="text-4xl font-bold">My NFTs</h1>
-        <button
-          id="openModal"
-          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center btn">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
-              clip-rule="evenodd" />
-          </svg>
-            Add NFT
-        </button>
-
+        <h1 class="text-4xl font-bold">Escrowed NFTs</h1>
       </div>
     </div>
-    <div id = "nft-container">
-      <!-- NFT Card 1 -->
-      <!-- <div class="nft-card card-compact bg-base-100 shadow-lg w-[300px] shadow-secondary m-1">
-        <figure class="relative">
-          <img src="http://212.237.0.141/Codecrypto-NFT/Defi.png" alt="NFT Image" class="h-60 min-w-full object-cover">
-          <figcaption class="glass absolute bottom-4 left-4 p-4 w-25 rounded-xl">
-            <span class="text-white"># 1</span>
-          </figcaption>
-        </figure>
-        <div class="m-5 card-body space-y-3">
-          <div class="flex items-center justify-center">
-            <p class="text-xl p-0 m-0 font-semibold">NFT Defi</p>
-          </div>
-          <div class="flex flex-col justify-center mt-1">
-            <p class="my-0 text-lg">A bored ape from the famous collection.</p>
-          </div>
-          <div class="flex space-x-3 mt-1 items-center">
-            <span class="text-lg font-semibold">Owner : </span>
-            <span class="text-sm">0x9876...4321</span>
-          </div>
+    <div id = "escrow-container"></div>
 
-          <div class="card-actions justify-end">
-            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded btn">
-              Sell
-            </button>
-          </div>
-        </div>
-      </div>-->
+    <div class="container mx-auto p-4">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-4xl font-bold">My NFTs</h1>
+      </div>
+    </div>
+    <div id = "nft-container"></div>
     <!-- Modal (hidden by default) -->
     <div id="addNFTModal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog"
       aria-modal="true">
