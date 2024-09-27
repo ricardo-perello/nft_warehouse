@@ -7,8 +7,7 @@ NFT Warehouse is a robust platform built for managing, storing, and trading Non-
 - **Secure Storage**: Protect your NFTs with state-of-the-art security.
 - **Trading Platform**: Seamlessly buy, sell, and trade NFTs.
 - **User-Friendly Interface**: Navigate and manage your assets with ease using our intuitive design.
-- **Comprehensive Analytics**: Track and analyze your NFT portfolio with detailed insights.
-- **Radix-Blockchain **: Compatible with the Radix blockchain network for greater asset management.
+- **Radix-Blockchain**: Compatible with the Radix blockchain network for greater asset management.
 
 ## Usage
 
@@ -16,8 +15,7 @@ Once the application is running, you can:
 
 - **Create an Account**: Sign up and begin managing your NFTs.
 - **Add NFTs**: Securely upload and store your NFTs in the warehouse.
-- **Trade NFTs**: Buy, sell, or trade NFTs through the integrated trading platform.
-- **View Analytics**: Use the detailed analytics dashboard to monitor and assess your NFT portfolio.
+- **Trade NFTs**: Sell and escrow NFTs through the integrated trading platform.
 
 ## Contributing
 
